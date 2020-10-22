@@ -8,15 +8,21 @@ import (
 
 func main() {
 
-	topic := "test_topic"
+	topic := "ratings"
+
 	// Store the config
 	cm := kafka.ConfigMap{
 		"bootstrap.servers":        "localhost:9092",
 		"go.events.channel.enable": true,
 		"group.id":                 "rmoff_learning_go",
-		"enable.partition.eof":     true}
+		"enable.partition.eof":     true,
+		"broker.address.family":    "v4",
+		"session.timeout.ms":       6000,
+		"auto.offset.reset":        "earliest",
+	}
 
-	// Variable p holds the new Consumer instance.
+	// Creating a new Consumer instance using the above mentioned configuration
+	// Variable c holds the new Consumer instance.
 	c, e := kafka.NewConsumer(&cm)
 
 	// Check for errors in creating the Consumer
@@ -60,14 +66,14 @@ func main() {
 					case *kafka.Message:
 						// It's a message
 						km := ev.(*kafka.Message)
-						fmt.Printf("✅ Message '%v' received from topic '%v' (p	artition %d at offset %d)\n",
+						fmt.Printf("✅ Message '%v' received from topic '%v' (partition %d at offset %d)\n",
 							string(km.Value),
 							string(*km.TopicPartition.Topic),
 							km.TopicPartition.Partition,
 							km.TopicPartition.Offset)
 					case kafka.PartitionEOF:
 						// We've finished reading messages on this partition so let's wrap up
-						// n.b. this is a BIG assumption that we are only consuming from one partition
+						// Assumption that we are only consuming from one partition
 						pe := ev.(kafka.PartitionEOF)
 						fmt.Printf("🌆 Got to the end of partition %v on topic %v at offset %v\n",
 							pe.Partition,
@@ -95,7 +101,6 @@ func main() {
 
 		// We'll wait for the Go routine to exit, which will happen once we've read all the messages on the topic
 		<-doneChan
-		// Now we can exit
 		c.Close()
 
 	}
