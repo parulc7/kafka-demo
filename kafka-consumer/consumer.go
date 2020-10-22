@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	topic := "ratings"
+	topic := "test_topic"
 	// Store the config
 	cm := kafka.ConfigMap{
 		"bootstrap.servers":        "localhost:9092",
